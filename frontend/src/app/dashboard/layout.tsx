@@ -2,7 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { useAuth } from '@/lib/auth/auth-context';
+import Sidebar, { SIDEBAR_WIDTH } from '@/components/Sidebar';
 
 export default function DashboardLayout({
     children,
@@ -11,6 +13,8 @@ export default function DashboardLayout({
 }) {
     const { isAuthenticated, loading } = useAuth();
     const router = useRouter();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -26,5 +30,21 @@ export default function DashboardLayout({
         );
     }
 
-    return <>{children}</>;
+    return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+            <Sidebar />
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: { xs: 2, sm: 3, md: 4 },
+                    ml: isMobile ? 0 : `${SIDEBAR_WIDTH}px`,
+                    mt: isMobile ? 7 : 0,
+                    width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+                }}
+            >
+                {children}
+            </Box>
+        </Box>
+    );
 }

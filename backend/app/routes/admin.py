@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from app.utils.decorators import require_role
+from app.auth import token_required
 from app.models.user import User, Location
 from app.models.leave import LeaveBalance, LeaveType, LeaveRequest
 from app.models.holiday import Holiday
@@ -19,6 +20,7 @@ def allowed_file(filename):
 
 # User Management
 @admin_bp.route('/users', methods=['GET'])
+@token_required
 @require_role('admin')
 def get_users():
     """Get all users with pagination"""

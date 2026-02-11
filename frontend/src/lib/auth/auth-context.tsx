@@ -23,18 +23,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is already logged in (only in browser)
-        if (typeof window !== 'undefined') {
-            const storedToken = localStorage.getItem('jwt_token');
-            const storedUser = localStorage.getItem('user');
-
-            if (storedToken && storedUser) {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
+        const initAuth = async () => {
+            if (typeof window !== 'undefined') {
+                const userManager = await keycloakAuth.getUser();
+                if (userManager) {
+                    setUser(userManager.profile as unknown as User);
+                    setToken(userManager.access_token);
+                    localStorage.setItem('jwt_token', userManager.access_token);
+                    localStorage.setItem('user', JSON.stringify(userManager.profile));
+                }
             }
-        }
+            setLoading(false);
+        };
 
-        setLoading(false);
+        initAuth();
     }, []);
 
     const login = async () => {

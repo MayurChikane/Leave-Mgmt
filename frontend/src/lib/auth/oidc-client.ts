@@ -40,4 +40,9 @@ export const keycloakAuth = {
   getUser: async () => {
     return await getUserManager().getUser();
   },
+
+  getAccessToken: async () => {
+    const user = await getUserManager().getUser();
+    return user?.access_token || null;
+  },
 };

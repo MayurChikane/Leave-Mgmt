@@ -28,27 +28,25 @@ def require_role(*allowed_roles):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            token = request.headers.get('Authorization', '').replace('Bearer ', '')
+            user = getattr(g, 'user', None)
             
-            if not token:
-                return jsonify({'error': 'No token provided'}), 401
+            if not user or not user.get('role'):
+                return jsonify({'error': 'Forbidden', 'message': 'Authentication required'}), 401
             
-            try:
-                payload = jwt.decode(token, os.getenv('JWT_SECRET'), algorithms=['HS256'])
-                
-                if payload.get('role') not in allowed_roles:
-                    return jsonify({'error': 'Forbidden', 'message': 'Insufficient permissions'}), 403
-                
-                request.user = payload
+            # Allow admin access to everything
+            if user['role'] == 'admin':
                 return f(*args, **kwargs)
-            except jwt.ExpiredSignatureError:
-                return jsonify({'error': 'Token expired'}), 401
-            except jwt.InvalidTokenError:
-                return jsonify({'error': 'Invalid token'}), 401
+
+            if user['role'] not in allowed_roles:
+                return jsonify({'error': 'Forbidden', 'message': 'Insufficient permissions'}), 403
+            
+            return f(*args, **kwargs)
         
         return decorated_function
     return decorator
 
+from flask import g
+
 def get_current_user():
     """Get current user from request context"""
-    return getattr(request, 'user', None)
+    return getattr(g, 'user', None)

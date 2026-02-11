@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date
 from app.utils.decorators import require_role, get_current_user
+from app.auth import token_required
 from app.models.leave import LeaveRequest, LeaveBalance
 from app.models.attendance import AttendanceRecord
 from app.models.user import User
@@ -11,6 +12,7 @@ from sqlalchemy import or_
 manager_bp = Blueprint('manager', __name__)
 
 @manager_bp.route('/team', methods=['GET'])
+@token_required
 @require_role('manager', 'admin')
 def get_team():
     """Get team members"""

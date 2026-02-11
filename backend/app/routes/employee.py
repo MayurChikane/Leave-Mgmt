@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date
 from app.utils.decorators import require_role, get_current_user
+from app.auth import token_required
 from app.models.leave import LeaveBalance, LeaveRequest, LeaveType
 from app.models.holiday import Holiday
 from app.models.attendance import AttendanceRecord
@@ -11,6 +12,7 @@ from app import db
 employee_bp = Blueprint('employee', __name__)
 
 @employee_bp.route('/balance', methods=['GET'])
+@token_required
 @require_role('employee', 'manager', 'admin')
 def get_leave_balance():
     """Get leave balance for current user"""
